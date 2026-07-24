@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Prédicteur Aviator</title>
+  <style>
+    :root {
+      --primary: #1F2630;
+      --accent: #E01E5A;
+      --header: #2A0E5A;
+      --button: #28A745;
+      --text-light: #FFFFFF;
+      --text-muted: #B0BEC5;
+      --bar-bg: #37474F;
+      --green: #4CAF50;
+      --orange: #FF9800;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--primary);
+      color: var(--text-light);
+      line-height: 1.4;
+    }
+    .header {
+      background: var(--header);
+      padding: 16px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .title-bar {
+      background: var(--accent);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .title-bar h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    .container {
+      padding: 16px;
+    }
+    .prediction-box {
+      background: #2D3440;
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .prediction-value {
+      font-size: 5rem;
+      font-weight: bold;
+      color: var(--text-light);
+    }
+    .button {
+      background: var(--button);
+      color: var(--text-light);
+      padding: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+    .stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .stat {
+      flex: 1 1 45%;
+      background: #263238;
+      padding: 16px;
+      border-radius: 8px;
+      min-width: 120px;
+    }
+    .stat h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+    .stat .value {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    .bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bar-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--green);
+      width: 0;
+      transition: width 0.5s ease;
+    }
+    .stat.orange .bar-fill {
+      background: var(--orange);
+    }
+    .bottom {
+      background: #24303B;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .bottom .label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .bottom .data {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bottom .chip {
+      padding: 6px 12px;
+      background: #3E4A5E;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    .promo {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+    }
+    .promo a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal {
+      background: #1F2630;
+      padding: 24px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 360px;
+      width: 90%;
+      color: white;
+    }
+    .modal h2 {
+      color: #E01E5A;
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+    .modal p {
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .modal .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal .actions a {
+      background: #28A745;
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .modal .actions a.secondary {
+      background: #E01E5A;
+    }
+    @media (max-width: 600px) {
+      .prediction-value { font-size: 3rem; }
+      .header { font-size: 1.25rem; padding: 12px; }
+      .title-bar h1 { font-size: 1rem; }
+      .stats { flex-direction: column; }
+      .stat { flex: 1 1 100%; }
+      .button { font-size: 0.9rem; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Bot de Prédiction</div>
+  <div class="title-bar"><h1>Prédicteur Aviator</h1></div>
+  <div class="container">
+    <p>✨ Utilisez notre algorithme avancé pour prédire le prochain crash. 🚀</p>
+    <div class="prediction-box">
+      <div class="prediction-value" id="predictionValue">-</div>
+    </div>
+    <button class="button" id="generateBtn">🔄 Générer Prédiction ✨</button>
+    <div class="stats">
+      <div class="stat">
+        <h3>Taux de Précision</h3>
+        <div class="value" id="accuracy">-</div>
+        <div class="bar-bg"><div class="bar-fill" id="accuracyBar"></div></div>
+      </div>
+      <div class="stat orange">
+        <h3>Mise Suggérée</h3>
+        <div class="value" id="suggestedBet">-</div>
+        <div class="bar-bg"><div class="bar-fill" id="betBar"></div></div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div class="label">Stratégie de Jeu :</div>
+      <div class="data">
+        <span class="chip" id="cashoutChip">-</span>
+        <span class="chip" id="patternChip">-</span>
+        <span class="chip" id="timingChip">-</span>
+      </div>
+    </div>
+    <div class="promo">
+      Si vous déposez plus de 60 000 XOF, vous bénéficierez d’un programme avec une précision de 95–98 %.<br>
+      Après votre dépôt, <a href="https://t.me/Kylian777bot">écrivez-moi</a>.
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2>⛔ Accès Limité</h2>
+      <p>Vous avez atteint la limite de 2 prédictions gratuites.<br>Inscrivez-vous via notre lien officiel et déposez au moins 1200 XOF pour continuer.<br><br>Pour un accès complet 24/7, déposez 5000 XOF et profitez de toutes les fonctionnalités sans limite !</p>
+      <div class="actions">
+        <a href="https://reffpa.com/L?tag=d_5883107m_45077c_&site=5883107&ad=45077&r=registration" target="_blank">✅ S'inscrire & Déposer</a>
+        <a href="https://t.me/Kylian777bot" class="secondary" target="_blank">✍️ Écrire à Joseph</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const generateBtn = document.getElementById('generateBtn');
+    const predictionValue = document.getElementById('predictionValue');
+    const accuracyText = document.getElementById('accuracy');
+    const accuracyBar = document.getElementById('accuracyBar');
+    const suggestedBetText = document.getElementById('suggestedBet');
+    const betBar = document.getElementById('betBar');
+    const cashoutChip = document.getElementById('cashoutChip');
+    const patternChip = document.getElementById('patternChip');
+    const timingChip = document.getElementById('timingChip');
+    const modalOverlay = document.getElementById('modalOverlay');
+
+    const patterns = ["Tendance ascendante détectée", "Pic de volatilité imminent", "Session stable prévue"];
+    const timings = ["Recommandé : pariez maintenant", "Recommandé : prochain tour", "Recommandé : attendez 2 tours"];
+
+    let usageCount = 0;
+
+    function updatePrediction() {
+      usageCount++;
+      if (usageCount > 2) {
+        modalOverlay.style.display = 'flex';
+        return;
+      }
+
+      const pred = (Math.random() * 2 + 1).toFixed(2);
+      predictionValue.textContent = pred + 'x';
+
+      const acc = Math.floor(Math.random() * (82 - 75 + 1)) + 75;
+      accuracyText.textContent = acc + '%';
+      accuracyBar.style.width = acc + '%';
+
+      const bet = Math.floor(Math.random() * 201) + 50;
+      suggestedBetText.textContent = bet + ' XOF';
+      betBar.style.width = (bet / 250 * 100) + '%';
+
+      cashoutChip.textContent = 'Encaissez à ' + (pred * 0.8).toFixed(2) + 'x';
+      patternChip.textContent = patterns[Math.floor(Math.random() * patterns.length)];
+      timingChip.textContent = timings[Math.floor(Math.random() * timings.length)];
+    }
+
+    generateBtn.addEventListener('click', updatePrediction);
+    window.addEventListener('DOMContentLoaded', updatePrediction);
+  </script>
+</body>
+</html>
